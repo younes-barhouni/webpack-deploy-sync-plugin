@@ -2,6 +2,17 @@
 
 A [Webpack](https://webpack.github.io/) plugin that that makes it easier to deploy bundles to remote machines and display OS-level notifications for Webpack build and ssh actions events.
 
+## Install
+
+```bash
+npm install webpack-deploy-sync-plugin --save-dev
+```
+
+```bash
+yarn add webpack-deploy-sync-plugin --dev
+```
+
+## Usage
 
 To use, install the webpack-deploy-sync-plugin package `npm install webpack-deploy-sync-plugin --save-dev` and add the plugin to your [Webpack configuration file](https://webpack.github.io/docs/configuration.html):
 
