@@ -1,5 +1,5 @@
 {
-  "name": "webpack-deploy-ssh-plugin",
+  "name": "webpack-deploy-sync-plugin",
   "version": "1.0.0",
   "description": "A Webpack plugin that makes it easier to deploy bundles to remote machines, and display OS-level notifications for both Webpack build and SSH actions events",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/younesBarhouni/webpack-deploy-ssh-plugin.git"
+    "url": "https://github.com/younesBarhouni/webpack-deploy-sync-plugin.git"
   },
   "author": "Younes Barhouni <barhouni.younes@gmail.com>",
   "license": "MIT",
