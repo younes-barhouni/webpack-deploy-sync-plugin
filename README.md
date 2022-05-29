@@ -8,6 +8,8 @@ A [Webpack](https://webpack.github.io/) plugin that that makes it easier to depl
 npm install webpack-deploy-sync-plugin --save-dev
 ```
 
+Or
+
 ```bash
 yarn add webpack-deploy-sync-plugin --dev
 ```
