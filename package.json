@@ -1,3 +1,71 @@
 {
-    "name": "webpack-deploy-sync-plugin"
+  "name": "webpack-deploy-ssh-plugin",
+  "version": "1.0.0",
+  "description": "A Webpack plugin that makes it easier to deploy bundles to remote machines, and display OS-level notifications for both Webpack build and SSH actions events",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "npm run clean && tsc && copyfiles -f src/assets/* dist/assets/",
+    "clean": "rimraf dist",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "npm run lint -- --fix",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint && npm t"
+  },
+  "keywords": [
+    "webpack",
+    "deployment",
+    "deploy",
+    "ssh",
+    "remote",
+    "build",
+    "compilation",
+    "compile",
+    "notification"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/younesBarhouni/webpack-deploy-ssh-plugin.git"
+  },
+  "author": "Younes Barhouni <barhouni.younes@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cli-progress": "^3.10.0",
+    "cli-table": "^0.3.11",
+    "es6-promise-pool": "^2.5.0",
+    "inquirer": "^8.2.2",
+    "log-buffer": "^0.0.3",
+    "log-update": "4.0.x",
+    "node-notifier": "^10.0.1",
+    "progress": "^1.1.8",
+    "schema-utils": "^4.0.0",
+    "ssh2-sftp-client": "^8.0.0",
+    "strip-ansi": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/cli-table": "^0.3.0",
+    "@types/inquirer": "^8.2.1",
+    "@types/jest": "^27.4.1",
+    "@types/node-notifier": "8.0.2",
+    "@types/progress": "^2.0.5",
+    "@types/ssh2-sftp-client": "^7.0.1",
+    "@types/strip-ansi": "^5.2.1",
+    "@types/webpack": "^5.28.0",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "autoprefixer": "^10.4.4",
+    "babel-jest": "^27.5.1",
+    "copyfiles": "^2.4.1",
+    "css-loader": "^6.7.1",
+    "eslint": "^8.13.0",
+    "extract-css-chunks-webpack-plugin": "^4.9.0",
+    "jest": "^27.5.1",
+    "postcss-loader": "^6.2.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.1.4",
+    "tslint": "^6.1.3",
+    "typescript": "^4.6.3",
+    "webpack": "^5.69.1"
+  }
 }
