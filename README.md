@@ -1,13 +1,13 @@
-# webpack-deploy-ssh
+# webpack-deploy-sync
 
-A [Webpack](https://webpack.github.io/) plugin that that makes it easier to deploy bundles to remote machines and display OS-level notifications for Webpack build and SSH actions events.
+A [Webpack](https://webpack.github.io/) plugin that that makes it easier to deploy bundles to remote machines and display OS-level notifications for Webpack build and ssh actions events.
 
 
-To use, install the webpack-deploy-ssh-plugin package `npm install webpack-deploy-ssh-plugin --save-dev` and add the plugin to your [Webpack configuration file](https://webpack.github.io/docs/configuration.html):
+To use, install the webpack-deploy-sync-plugin package `npm install webpack-deploy-sync-plugin --save-dev` and add the plugin to your [Webpack configuration file](https://webpack.github.io/docs/configuration.html):
 
 ```javascript
 // webpack.config.js
-const WebpackDeploySshPlugin = require('webpack-deploy-ssh-plugin');
+const WebpackDeploySyncPlugin = require('webpack-deploy-sync-plugin');
 // SSH configuration
 const sshConfig = {
   host:'my.remote.host.com',
@@ -21,7 +21,7 @@ const remoteOutput = '/var/www/my_project/dist';
 module.exports = {
   // ... snip ...
   plugins: [
-    new WebpackDeploySshPlugin({
+    new WebpackDeploySyncPlugin({
       title: 'My Awsome Project',
       webpackInstance: webpack,
       sshConfig,
@@ -40,7 +40,7 @@ This project is written in TypeScript, and type declarations are included. You c
 ```typescript
 // webpack.config.ts
 import * as webpack from 'webpack'
-import * as WebpackDeploySshPlugin from 'webpack-deploy-ssh-plugin';
+import * as WebpackDeploySyncPlugin from 'webpack-deploy-sync-plugin';
 // SSH configuration
 const sshConfig = {
   host:'my.remote.host.com',
@@ -54,7 +54,7 @@ const remoteOutput = '/var/www/my_project/dist';
 const config: webpack.Configuration = {
   // ... snip ...
   plugins: [
-    new WebpackDeploySshPlugin({
+    new WebpackDeploySyncPlugin({
       title: 'My Awsome Project',
       webpackInstance: webpack,
       sshConfig,
