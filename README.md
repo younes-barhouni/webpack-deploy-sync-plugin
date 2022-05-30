@@ -14,6 +14,29 @@ Or
 yarn add webpack-deploy-sync-plugin --dev
 ```
 
+## Purpose
+
+<p align="center">
+  <img width="350" src="assets/compile_start.png">
+</p>
+
+<p align="center">
+  <img width="350" src="assets/start_bundle.png">
+</p>
+
+<p align="center">
+  <img width="350" src="assets/ssh_con_fail.png">
+</p>
+
+<p align="center">
+  <img width="350" src="assets/need_action.png">
+</p>
+
+<p align="center">
+  <img width="350" src="assets/build_success.png">
+</p>
+
+
 ## Usage
 
 To use, install the webpack-deploy-sync-plugin package `npm install webpack-deploy-sync-plugin --save-dev` and add the plugin to your [Webpack configuration file](https://webpack.github.io/docs/configuration.html):
