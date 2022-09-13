@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const path_1 = __importDefault(require("path"));
-const process_1 = __importDefault(require("process"));
-const os_1 = __importDefault(require("os"));
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const node_path_1 = __importDefault(require("node:path"));
+const node_process_1 = __importDefault(require("node:process"));
+const node_os_1 = __importDefault(require("node:os"));
 const node_notifier_1 = __importDefault(require("node-notifier"));
 const strip_ansi_1 = __importDefault(require("strip-ansi"));
-const child_process_1 = require("child_process");
+const node_child_process_1 = require("node:child_process");
 const types_1 = require("../types");
 // https://github.com/mikaelbr/node-notifier/issues/154
 // Specify appID to prevent SnoreToast shortcut installation.
@@ -16,7 +17,7 @@ const types_1 = require("../types");
 // title bar (different from title heading inside notification).
 // This only has an effect in Windows.
 // const snoreToastOptions = notifier.Notification === notifier.WindowsToaster && { appID: 'Vue UI' }
-const DEFAULT_ICON_PATH = path_1.default.resolve(__dirname, '../assets');
+const DEFAULT_ICON_PATH = node_path_1.default.resolve(__dirname, '../assets');
 class Notifier {
     constructor(options) {
         var _a, _b, _c, _d;
@@ -29,15 +30,15 @@ class Notifier {
         this.suppressWarning = false;
         this.activateTerminalOnError = false;
         this.showDuration = false;
-        this.logo = path_1.default.join(DEFAULT_ICON_PATH, 'webpack.png');
-        this.successIcon = path_1.default.join(DEFAULT_ICON_PATH, 'compile_success.png');
-        this.warningIcon = path_1.default.join(DEFAULT_ICON_PATH, 'compile_warning.png');
-        this.failureIcon = path_1.default.join(DEFAULT_ICON_PATH, 'compile_failure.png');
-        this.compileIcon = path_1.default.join(DEFAULT_ICON_PATH, 'compile_process.png');
-        this.sshSuccessIcon = path_1.default.join(DEFAULT_ICON_PATH, 'ssh_success.png');
-        this.sshFailureIcon = path_1.default.join(DEFAULT_ICON_PATH, 'ssh_failure.png');
-        this.sshActionIcon = path_1.default.join(DEFAULT_ICON_PATH, 'ssh_action.png');
-        this.deployEndIcon = path_1.default.join(DEFAULT_ICON_PATH, 'deploy_end.png');
+        this.logo = node_path_1.default.join(DEFAULT_ICON_PATH, 'webpack.png');
+        this.successIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'compile_success.png');
+        this.warningIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'compile_warning.png');
+        this.failureIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'compile_failure.png');
+        this.compileIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'compile_process.png');
+        this.sshSuccessIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'ssh_success.png');
+        this.sshFailureIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'ssh_failure.png');
+        this.sshActionIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'ssh_action.png');
+        this.deployEndIcon = node_path_1.default.join(DEFAULT_ICON_PATH, 'deploy_end.png');
         this.onClick = () => this.activateTerminalWindow;
         /**
          *
@@ -57,16 +58,16 @@ class Notifier {
             // Built-in actions:
             node_notifier_1.default.once('timeout', () => {
                 noCallback();
-                node_notifier_1.default.off('timeout', () => { });
+                node_notifier_1.default.off('timeout', () => undefined);
             });
             // Buttons actions (lower-case):
             node_notifier_1.default.once('yes', () => {
                 yesCallback();
-                node_notifier_1.default.off('yes', () => { });
+                node_notifier_1.default.off('yes', () => undefined);
             });
             node_notifier_1.default.once('no', () => {
                 noCallback();
-                node_notifier_1.default.off('no', () => { });
+                node_notifier_1.default.off('no', () => undefined);
             });
         };
         Object.assign(this, options);
@@ -80,15 +81,15 @@ class Notifier {
         node_notifier_1.default.on('click', this.onClick);
     }
     activateTerminalWindow() {
-        if (process_1.default.platform === 'darwin') {
+        if (node_process_1.default.platform === 'darwin') {
             // TODO: is there a way to translate $TERM_PROGRAM into the application name
             // to make this more flexible?
-            (0, child_process_1.exec)('TERM="$TERM_PROGRAM"; ' +
+            (0, node_child_process_1.exec)('TERM="$TERM_PROGRAM"; ' +
                 '[[ "$TERM" == "Apple_Terminal" ]] && TERM="Terminal"; ' +
                 '[[ "$TERM" == "vscode" ]] && TERM="Visual Studio Code"; ' +
                 'osascript -e "tell application \\"$TERM\\" to activate"');
         }
-        else if (process_1.default.platform === 'win32') {
+        else if (node_process_1.default.platform === 'win32') {
             // TODO: Windows platform
         }
     }
@@ -101,14 +102,14 @@ class Notifier {
         // this is necessary in Windows 8 and above, (Windows 10 post build 1709), where all notifications must be generated
         // by a valid application.
         // see: https://github.com/KDE/snoretoast, https://github.com/RoccoC/webpack-build-notifier/issues/20
-        if (process_1.default.platform === 'win32') {
-            const versionParts = os_1.default.release().split('.');
-            const winVer = +(`${versionParts[0]}.${versionParts[1]}`);
-            if (winVer >= 6.2) {
+        if (node_process_1.default.platform === 'win32') {
+            const versionParts = node_os_1.default.release().split('.');
+            const winVersion = +(`${versionParts[0]}.${versionParts[1]}`);
+            if (winVersion >= 6.2) {
                 // Windows version >= 8
-                const snoreToast = path_1.default.join(require.resolve('node-notifier'), '../vendor/snoreToast', `snoretoast-${process_1.default.arch === 'x64' ? 'x64' : 'x86'}.exe`);
+                const snoreToast = node_path_1.default.join(require.resolve('node-notifier'), '../vendor/snoreToast', `snoretoast-${node_process_1.default.arch === 'x64' ? 'x64' : 'x86'}.exe`);
                 try {
-                    (0, child_process_1.execFileSync)(snoreToast, [
+                    (0, node_child_process_1.execFileSync)(snoreToast, [
                         '-appID',
                         'notification',
                         '-install',
@@ -117,8 +118,8 @@ class Notifier {
                         'notification',
                     ]);
                 }
-                catch (e) {
-                    console.error('An error occurred while attempting to install the SnoreToast AppID!', e);
+                catch (error) {
+                    console.error('An error occurred while attempting to install the SnoreToast AppID!', error);
                 }
             }
         }
@@ -128,7 +129,7 @@ class Notifier {
         let message;
         message = (error.message || error.details);
         if (message && error.module && error.module.resource) {
-            message = `${filepath}${os_1.default.EOL}${message.replace(error.module.resource, '')}`;
+            message = `${filepath}${node_os_1.default.EOL}${message.replace(error.module.resource, '')}`;
         }
         if (message === undefined) {
             return 'Unknown';
@@ -144,8 +145,8 @@ class Notifier {
      * @private
      */
     getFirstWarningOrError(compilation, type) {
-        if (compilation.children && compilation.children.length) {
-            for (let child of compilation.children) {
+        if (compilation.children && compilation.children.length > 0) {
+            for (const child of compilation.children) {
                 const warningsOrErrors = child[type];
                 if (warningsOrErrors && warningsOrErrors[0]) {
                     return warningsOrErrors[0];
@@ -161,7 +162,7 @@ class Notifier {
     onCompilationDone(results) {
         let notify = false;
         let title = `${this.title} - `;
-        let msg = 'Build successful!';
+        let message = 'Build successful!';
         let icon = this.successIcon;
         let sound = this.successSound;
         let compilationStatus = types_1.CompilationStatus.SUCCESS;
@@ -171,7 +172,7 @@ class Notifier {
             notify = true;
             compilationStatus = types_1.CompilationStatus.ERROR;
             title += 'Error';
-            msg = this.formatMessage(error, errorFilePath);
+            message = this.formatMessage(error, errorFilePath);
             icon = this.failureIcon;
             sound = this.failureSound;
             this.buildSuccessful = false;
@@ -182,7 +183,7 @@ class Notifier {
             notify = true;
             compilationStatus = types_1.CompilationStatus.WARNING;
             title += 'Warning';
-            msg = this.formatMessage(warning, warningFilePath);
+            message = this.formatMessage(warning, warningFilePath);
             icon = this.warningIcon;
             sound = this.warningSound;
             this.buildSuccessful = false;
@@ -190,7 +191,7 @@ class Notifier {
         else {
             title += 'Success';
             if (this.showDuration) {
-                msg += ` [${results.endTime - results.startTime} ms]`;
+                message += ` [${results.endTime - results.startTime} ms]`;
             }
             if (this.suppressSuccess === false || !this.buildSuccessful) {
                 notify = true; // previous build failed, let's show a notification even if success notifications are suppressed
@@ -202,7 +203,7 @@ class Notifier {
                 appID: 'Notification',
                 title,
                 icon,
-                message: (0, strip_ansi_1.default)(msg),
+                message: (0, strip_ansi_1.default)(message),
                 contentImage: this.logo,
                 sound,
                 wait: !this.buildSuccessful
@@ -226,7 +227,7 @@ class Notifier {
             appID: 'Notification',
             title: `${this.title} - watching`,
             message: 'Compilation started...',
-            contentImage: path_1.default.join(DEFAULT_ICON_PATH, 'compile_success.png'),
+            contentImage: node_path_1.default.join(DEFAULT_ICON_PATH, 'compile_success.png'),
             icon: this.compileIcon,
             sound: this.compilationSound
         });

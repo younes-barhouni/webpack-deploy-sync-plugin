@@ -1,10 +1,11 @@
-import path from 'path';
-import process from 'process';
-import os from 'os';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import path from 'node:path';
+import process from 'node:process';
+import os from 'node:os';
 import webpack from 'webpack';
 import notifier from 'node-notifier';
 import stripAnsi from 'strip-ansi';
-import { exec, execFileSync } from 'child_process';
+import { exec, execFileSync } from 'node:child_process';
 import { Notification } from 'node-notifier/notifiers/notificationcenter';
 import { CompilationResult, Options, CompilationStatus } from '../types';
 
@@ -19,19 +20,19 @@ const DEFAULT_ICON_PATH = path.resolve(__dirname, '../assets');
 
 class Notifier {
 
-  private buildSuccessful: boolean = false;
-  private hasRun: boolean = false;
+  private buildSuccessful = false;
+  private hasRun = false;
   // Default options
-  private title: string = '';
-  private sound: string = 'Submarine';
+  private title = '';
+  private sound = 'Submarine';
   private readonly successSound: string;
   private readonly warningSound: string;
   private readonly failureSound: string;
   private readonly compilationSound: string;
   private suppressSuccess: boolean | 'always' | 'initial' = false;
-  private suppressWarning: boolean = false;
-  private activateTerminalOnError: boolean = false;
-  private showDuration: boolean = false;
+  private suppressWarning = false;
+  private activateTerminalOnError = false;
+  private showDuration = false;
   private logo?: string = path.join(DEFAULT_ICON_PATH, 'webpack.png');
   private successIcon: string = path.join(DEFAULT_ICON_PATH, 'compile_success.png');
   private warningIcon: string = path.join(DEFAULT_ICON_PATH, 'compile_warning.png');
@@ -55,7 +56,7 @@ class Notifier {
       this.compilationSound = this.compilationSound ?? this.sound;
     }
     this.registerSnoreToast();
-    notifier.on('click', this.onClick!);
+    notifier.on('click', this.onClick);
   }
 
   private activateTerminalWindow(): void {
@@ -83,9 +84,9 @@ class Notifier {
 
     if (process.platform === 'win32') {
       const versionParts = os.release().split('.');
-      const winVer = +(`${versionParts[0]}.${versionParts[1]}`);
+      const winVersion = +(`${versionParts[0]}.${versionParts[1]}`);
 
-      if (winVer >= 6.2) {
+      if (winVersion >= 6.2) {
         // Windows version >= 8
         const snoreToast = path.join(
           require.resolve('node-notifier'),
@@ -104,8 +105,8 @@ class Notifier {
               'notification',
             ]
           );
-        } catch (e) {
-          console.error('An error occurred while attempting to install the SnoreToast AppID!', e);
+        } catch (error) {
+          console.error('An error occurred while attempting to install the SnoreToast AppID!', error);
         }
       }
     }
@@ -132,8 +133,8 @@ class Notifier {
    * @private
    */
   private getFirstWarningOrError(compilation: webpack.Compilation, type: 'warnings'|'errors'): any {
-    if (compilation.children && compilation.children.length) {
-      for (let child of compilation.children) {
+    if (compilation.children && compilation.children.length > 0) {
+      for (const child of compilation.children) {
         const warningsOrErrors = child[type];
         if (warningsOrErrors && warningsOrErrors[0]) {
           return warningsOrErrors[0];
@@ -148,9 +149,9 @@ class Notifier {
    * @param results
    */
   public onCompilationDone(results: webpack.Stats): void {
-    let notify: boolean = false;
+    let notify = false;
     let title = `${this.title} - `;
-    let msg = 'Build successful!';
+    let message = 'Build successful!';
     let icon = this.successIcon;
     let sound = this.successSound;
     let compilationStatus = CompilationStatus.SUCCESS;
@@ -161,7 +162,7 @@ class Notifier {
       notify = true;
       compilationStatus = CompilationStatus.ERROR;
       title += 'Error';
-      msg = this.formatMessage(error, errorFilePath);
+      message = this.formatMessage(error, errorFilePath);
       icon = this.failureIcon;
       sound = this.failureSound;
       this.buildSuccessful = false;
@@ -171,14 +172,14 @@ class Notifier {
       notify = true;
       compilationStatus = CompilationStatus.WARNING;
       title += 'Warning';
-      msg = this.formatMessage(warning, warningFilePath);
+      message = this.formatMessage(warning, warningFilePath);
       icon = this.warningIcon;
       sound = this.warningSound;
       this.buildSuccessful = false;
     } else {
       title += 'Success';
       if (this.showDuration) {
-        msg += ` [${results.endTime - results.startTime} ms]`;
+        message += ` [${results.endTime - results.startTime} ms]`;
       }
       if (this.suppressSuccess === false || !this.buildSuccessful) {
         notify = true; // previous build failed, let's show a notification even if success notifications are suppressed
@@ -190,7 +191,7 @@ class Notifier {
         appID: 'Notification',
         title,
         icon,
-        message: stripAnsi(msg),
+        message: stripAnsi(message),
         contentImage: this.logo,
         sound,
         wait: !this.buildSuccessful
@@ -210,7 +211,7 @@ class Notifier {
    * @param compiler
    * @param callback
    */
-  public onCompilationWatchRun(compiler: webpack.Compiler, callback: Function): void {
+  public onCompilationWatchRun(compiler: webpack.Compiler, callback: () => void): void {
     notifier.notify({
       appID: 'Notification',
       title: `${this.title} - watching`,
@@ -257,16 +258,16 @@ class Notifier {
     // Built-in actions:
     notifier.once('timeout', () => {
       noCallback();
-      notifier.off('timeout', () => {});
+      notifier.off('timeout', () => undefined);
     });
     // Buttons actions (lower-case):
     notifier.once('yes', () => {
       yesCallback();
-      notifier.off('yes', () => {});
+      notifier.off('yes', () => undefined);
     });
     notifier.once('no', () => {
       noCallback();
-      notifier.off('no', () => {});
+      notifier.off('no', () => undefined);
     });
   };
 

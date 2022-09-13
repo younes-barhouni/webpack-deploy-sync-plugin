@@ -6,7 +6,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "sourceMap": true,
-    "outDir": "dist"
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": "./",
+    "paths": {
+      "@plugin/*": [ "src/*" ],
+    }
   },
   "lib": ["es2015"],
   "files": [

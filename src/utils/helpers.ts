@@ -1,5 +1,5 @@
 // Copied from https://github.com/sindresorhus/is-plain-obj/blob/97480673cf12145b32ec2ee924980d66572e8a86/index.js
-export function isPlainObject(value: any): boolean {
+export function isPlainObject(value: unknown): boolean {
   if (Object.prototype.toString.call(value) !== '[object Object]') {
     return false;
   }
@@ -19,7 +19,7 @@ export const colorList = {
 };
 
 export function colorize(color: number, output: string): string {
-  return ['\x1b[', color, 'm', output, '\x1b[0m'].join('');
+  return ['\u001B[', color, 'm', output, '\u001B[0m'].join('');
 }
 
 export function formatSize(size: number): string {
@@ -52,7 +52,7 @@ export function log(color, message) {
 
 export function createUUID(){
   const uuidPattern = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-  let dt = new Date().getTime();
+  let dt = Date.now();
   return uuidPattern.replace(/[xy]/g, (c) => {
     const r = (dt + Math.random()*16)%16 | 0;
     dt = Math.floor(dt/16);

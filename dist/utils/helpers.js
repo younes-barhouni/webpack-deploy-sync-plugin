@@ -21,7 +21,7 @@ exports.colorList = {
     white: 37
 };
 function colorize(color, output) {
-    return ['\x1b[', color, 'm', output, '\x1b[0m'].join('');
+    return ['\u001B[', color, 'm', output, '\u001B[0m'].join('');
 }
 exports.colorize = colorize;
 function formatSize(size) {
@@ -49,7 +49,7 @@ function log(color, message) {
 exports.log = log;
 function createUUID() {
     const uuidPattern = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-    let dt = new Date().getTime();
+    let dt = Date.now();
     return uuidPattern.replace(/[xy]/g, (c) => {
         const r = (dt + Math.random() * 16) % 16 | 0;
         dt = Math.floor(dt / 16);

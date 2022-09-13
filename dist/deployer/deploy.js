@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,13 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const ssh2_sftp_client_1 = __importDefault(require("ssh2-sftp-client"));
 const es6_promise_pool_1 = __importDefault(require("es6-promise-pool"));
 const cli_progress_1 = __importDefault(require("cli-progress"));
 const inquirer_1 = __importDefault(require("inquirer"));
 const helpers_1 = require("../utils/helpers");
-const fs = __importStar(require("fs"));
-require('events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
+// import * as fs from 'node:fs';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('node:events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
 /**
  * Deploy Class
  */
@@ -55,8 +34,8 @@ class Deploy {
         try {
             this.sftp = this.connect(success, fail);
         }
-        catch (e) {
-            process.stdout.write((0, helpers_1.colorize)(helpers_1.colorList.red, e.message));
+        catch (error) {
+            process.stdout.write((0, helpers_1.colorize)(helpers_1.colorList.red, error.message));
             process.stdout.write('\n');
         }
     }
@@ -67,20 +46,20 @@ class Deploy {
     connect(success, fail) {
         const client = new ssh2_sftp_client_1.default();
         client.connect(this.sshConfig)
-            .then((sftp) => {
-            process.stdout.write(`Connection to remote \x1b[36m${this.sshConfig.host}\x1b[0m successfully established.`);
+            .then(() => {
+            process.stdout.write(`Connection to remote \u001B[36m${this.sshConfig.host}\u001B[0m successfully established.`);
             process.stdout.write('\n');
             success();
             // this.doSync(this.sshConfig, client);
         })
-            .catch((err) => {
-            (0, helpers_1.log)(helpers_1.colorList.red, err.message);
+            .catch((error) => {
+            (0, helpers_1.log)(helpers_1.colorList.red, error.message);
             fail();
         });
         //
         if (client) {
             client.on('upload', (info) => {
-                console.log('Listener: Uploaded ', `\x1b[32m${info.source}\x1b[0m`);
+                console.log('Listener: Uploaded', `\u001B[32m${info.source}\u001B[0m`);
             });
             client.on('end', () => {
                 (0, helpers_1.log)(helpers_1.colorList.yellow, 'Deploy complete.');
@@ -94,17 +73,17 @@ class Deploy {
      * @param client
      * @private
      */
-    doSync(sshConfig, client) {
-        const localManifestData = fs.readFileSync(`${sshConfig.localOutput}/manifest.json`);
-        const localManifest = JSON.parse(localManifestData);
-        // console.log(localManifest.uuid);
-        client.get(`${sshConfig.remote}/manifest.json`, `${sshConfig.tmpPath}/manifest.json`)
-            .then((file) => {
-            const remoteManifestData = fs.readFileSync(file);
-            const remoteManifest = JSON.parse(remoteManifestData);
-            // console.log(remoteManifest.uuid);
-        });
-    }
+    // private doSync(sshConfig, client) {
+    //   // const localManifestData: string = fs.readFileSync(`${sshConfig.localOutput}/manifest.json`) as unknown as string;
+    //   // const localManifest = JSON.parse(localManifestData);
+    //   // console.log(localManifest.uuid);
+    //   client.get(`${sshConfig.remote}/manifest.json`, `${sshConfig.tmpPath}/manifest.json`)
+    //     .then((file: string ) => {
+    //       // const remoteManifestData: string = fs.readFileSync(file) as unknown as string;
+    //       // const remoteManifest = JSON.parse(remoteManifestData);
+    //       // console.log(remoteManifest.uuid);
+    //     });
+    // }
     /**
      * onOkUploadAllDist
      * @param localOutput
@@ -128,13 +107,13 @@ class Deploy {
                 })).finally(() => __awaiter(this, void 0, void 0, function* () {
                     yield client.end();
                 }))
-                    .catch((err) => {
-                    console.log(err);
+                    .catch((error) => {
+                    console.log(error);
                     (0, helpers_1.log)(helpers_1.colorList.red, ' Something went wrong!.');
                 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
+                console.log(error);
                 (0, helpers_1.log)(helpers_1.colorList.red, ' Something went wrong!.');
             }
         });
@@ -202,7 +181,7 @@ class Deploy {
         (0, helpers_1.log)(helpers_1.colorList.cyan, 'Wait please! upload modified files to remote dist started...');
         // Function used to upload files in promise pool
         function uploadBundle(sftp, bundle) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const bar = new cli_progress_1.default.SingleBar({}, cli_progress_1.default.Presets.shades_classic);
                 // start the progress bar with a total value of 200 and start value of 0
                 bar.start(100, 0);
@@ -220,7 +199,7 @@ class Deploy {
                             process.stdout.write((0, helpers_1.colorize)(helpers_1.colorList.white, ' with success')); //cyan
                             process.stdout.write('\n');
                         }
-                    } }, (error) => {
+                    } }, () => {
                     resolve(bundle);
                 });
             });
@@ -236,18 +215,18 @@ class Deploy {
             }
         }
         try {
-            let conn = new ssh2_sftp_client_1.default();
+            const conn = new ssh2_sftp_client_1.default();
             conn.connect(this.sshConfig)
                 .then((sftp) => {
                 success();
                 const promiseIterator = uploadBundlesGenerator(sftp, modifiedBundles);
-                let pool = new es6_promise_pool_1.default(promiseIterator, 10);
+                const pool = new es6_promise_pool_1.default(promiseIterator, 10);
                 pool.start().then(() => {
                     sftp.end();
                     (0, helpers_1.log)(helpers_1.colorList.yellow, ' Deploy complete.');
                     end();
                 });
-            }).catch((error) => {
+            }).catch(() => {
                 (0, helpers_1.log)(helpers_1.colorList.red, ' Something went wrong!.');
                 failure();
             });

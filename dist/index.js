@@ -38,8 +38,8 @@ class WebpackDeploySshPlugin {
      * @param fn
      * @private
      */
-    hook(compiler, hookName, fn) {
-        compiler.hooks[hookName].tap(`${this.pluginName}:${hookName}`, fn);
+    hook(compiler, hookName, function_) {
+        compiler.hooks[hookName].tap(`${this.pluginName}:${hookName}`, function_);
     }
     /**
      * apply

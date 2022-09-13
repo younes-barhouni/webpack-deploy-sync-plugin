@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import NotificationCenter from 'node-notifier/notifiers/notificationcenter';
 import { NodeNotifier } from 'node-notifier';
 import webpack from 'webpack';
@@ -82,7 +83,7 @@ export type Options = {
   remoteOutput?: string;
   displayNotifications?: boolean;
   webpackInstance?: typeof webpack,
-  getCompilerHooks?: any;
+  getCompilerHooks?: unknown;
   tmpPath?: string;
   localOutput?: string;
 };

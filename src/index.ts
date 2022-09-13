@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Options } from './types';
 import webpack, {Compiler} from 'webpack';
-import {createUUID, isPlainObject} from './utils/helpers';
+import {isPlainObject} from './utils/helpers';
 import CompileHandler from './compiler/compileHandler';
 import {ProgressLogger} from './logger/ProgressLogger';
 
@@ -13,6 +14,7 @@ import {ProgressLogger} from './logger/ProgressLogger';
  */
 export default class WebpackDeploySshPlugin {
   // Default options
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly options: any;
   private readonly pluginName: string;
   private remoteOutput: string;
@@ -21,7 +23,7 @@ export default class WebpackDeploySshPlugin {
   private startCompile: boolean;
 
   private displayNotifications: boolean;
-  private hideStartingStats: boolean = false;
+  private hideStartingStats = false;
 
   // constructor
   constructor(options: Options = {}) {
@@ -51,8 +53,8 @@ export default class WebpackDeploySshPlugin {
    * @param fn
    * @private
    */
-  private hook(compiler: Compiler, hookName: any, fn: any) {
-    (compiler.hooks as unknown as any)[hookName].tap(`${this.pluginName}:${hookName}`, fn);
+  private hook(compiler: Compiler, hookName: any, function_: any) {
+    (compiler.hooks as unknown as any)[hookName].tap(`${this.pluginName}:${hookName}`, function_);
   }
 
   /**

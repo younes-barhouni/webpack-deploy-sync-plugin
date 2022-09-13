@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Client, {ConnectOptions} from 'ssh2-sftp-client';
 import PromisePool from 'es6-promise-pool';
 import cliProgress from 'cli-progress';
 import inquirer from 'inquirer';
 import {colorize, colorList, log} from '../utils/helpers';
 import { SFTPWrapper } from 'ssh2';
-import * as fs from 'fs';
+// import * as fs from 'node:fs';
 
-require('events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('node:events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
 
 /**
  * Deploy Class
@@ -24,8 +26,8 @@ class Deploy {
     this.sshConfig = sshConfig;
     try {
       this.sftp = this.connect(success, fail);
-    } catch (e) {
-      process.stdout.write(colorize(colorList.red, e.message));
+    } catch (error) {
+      process.stdout.write(colorize(colorList.red, error.message));
       process.stdout.write('\n');
     }
   }
@@ -37,21 +39,21 @@ class Deploy {
   private connect(success, fail) {
     const client = new Client();
     client.connect(this.sshConfig)
-      .then((sftp) => {
-        process.stdout.write(`Connection to remote \x1b[36m${this.sshConfig.host}\x1b[0m successfully established.`);
+      .then(() => {
+        process.stdout.write(`Connection to remote \u001B[36m${this.sshConfig.host}\u001B[0m successfully established.`);
         process.stdout.write('\n');
         success();
         // this.doSync(this.sshConfig, client);
 
       })
-      .catch((err: any): void => {
-        log(colorList.red, err.message);
+      .catch((error: Error): void => {
+        log(colorList.red, error.message);
         fail()
       });
     //
     if (client) {
       client.on('upload', (info: any) => {
-        console.log('Listener: Uploaded ', `\x1b[32m${info.source}\x1b[0m`);
+        console.log('Listener: Uploaded', `\u001B[32m${info.source}\u001B[0m`);
       })
       client.on('end', () => {
         log(colorList.yellow, 'Deploy complete.');
@@ -66,17 +68,17 @@ class Deploy {
    * @param client
    * @private
    */
-  private doSync(sshConfig, client) {
-    const localManifestData: string = fs.readFileSync(`${sshConfig.localOutput}/manifest.json`) as unknown as string;
-    const localManifest = JSON.parse(localManifestData);
-    // console.log(localManifest.uuid);
-    client.get(`${sshConfig.remote}/manifest.json`, `${sshConfig.tmpPath}/manifest.json`)
-      .then((file: string ) => {
-        const remoteManifestData: string = fs.readFileSync(file) as unknown as string;
-        const remoteManifest = JSON.parse(remoteManifestData);
-        // console.log(remoteManifest.uuid);
-      });
-  }
+  // private doSync(sshConfig, client) {
+  //   // const localManifestData: string = fs.readFileSync(`${sshConfig.localOutput}/manifest.json`) as unknown as string;
+  //   // const localManifest = JSON.parse(localManifestData);
+  //   // console.log(localManifest.uuid);
+  //   client.get(`${sshConfig.remote}/manifest.json`, `${sshConfig.tmpPath}/manifest.json`)
+  //     .then((file: string ) => {
+  //       // const remoteManifestData: string = fs.readFileSync(file) as unknown as string;
+  //       // const remoteManifest = JSON.parse(remoteManifestData);
+  //       // console.log(remoteManifest.uuid);
+  //     });
+  // }
 
   /**
    * onOkUploadAllDist
@@ -100,12 +102,12 @@ class Deploy {
       }).finally(async () => {
         await client.end();
       })
-      .catch((err: any) => {
-        console.log(err)
+      .catch((error: any) => {
+        console.log(error)
         log(colorList.red,' Something went wrong!.');
       });
-    } catch (e) {
-      console.log(e)
+    } catch (error) {
+      console.log(error)
       log(colorList.red,' Something went wrong!.');
     }
   }
@@ -127,7 +129,7 @@ class Deploy {
    * @param notificationPrompt
    */
   public bulkUpload(localOutput, remoteOutput, notificationPrompt?: (message, yesCallback, noCallback) => void): void {
-    const message: string = 'Do you want to sync project with remote dist?';
+    const message = 'Do you want to sync project with remote dist?';
     if (notificationPrompt) {
       notificationPrompt(message, () => {
         // you pressed YES
@@ -173,7 +175,7 @@ class Deploy {
     log(colorList.cyan, 'Wait please! upload modified files to remote dist started...');
     // Function used to upload files in promise pool
     function uploadBundle(sftp, bundle) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
         // start the progress bar with a total value of 200 and start value of 0
         bar.start(100, 0);
@@ -191,7 +193,7 @@ class Deploy {
               process.stdout.write(colorize(colorList.white,' with success'));//cyan
               process.stdout.write('\n');
             }
-          }}, (error) => {
+          }}, () => {
             resolve(bundle);
           });
       });
@@ -209,18 +211,18 @@ class Deploy {
     }
 
     try {
-      let conn = new Client();
+      const conn = new Client();
       conn.connect(this.sshConfig)
         .then((sftp: SFTPWrapper) => {
           success();
           const promiseIterator = uploadBundlesGenerator(sftp, modifiedBundles)
-          let pool = new PromisePool(promiseIterator as unknown as () => void | PromiseLike<unknown>, 10);
+          const pool = new PromisePool(promiseIterator as unknown as () => void | PromiseLike<unknown>, 10);
           pool.start().then(() => {
             sftp.end();
             log(colorList.yellow,' Deploy complete.');
             end();
           });
-        }).catch((error) => {
+        }).catch(() => {
           log(colorList.red,' Something went wrong!.');
           failure()
         });

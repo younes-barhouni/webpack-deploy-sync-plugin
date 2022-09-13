@@ -30,7 +30,7 @@ exports.ProgressLogger = void 0;
 const chalk_1 = __importDefault(require("chalk"));
 const figures_1 = __importDefault(require("figures"));
 const log_update_1 = __importDefault(require("log-update"));
-const path = __importStar(require("path"));
+const path = __importStar(require("node:path"));
 /**
  * Progress logger class
  */
@@ -95,15 +95,15 @@ class ProgressLogger {
                 if (moduleName !== undefined) {
                     let betterModuleName = moduleName;
                     // Only show the file that is actually being processed (and remove all details about used loaders)
-                    if (betterModuleName.indexOf('!') !== -1) {
+                    if (betterModuleName.includes('!')) {
                         const splitModuleName = betterModuleName.split('!');
                         betterModuleName = splitModuleName[splitModuleName.length - 1];
                     }
                     // Transform absolute paths into relative ones (to shorten the so so incredible long path)
-                    if (betterModuleName.indexOf(absoluteProjectPath) !== -1) {
+                    if (betterModuleName.includes(absoluteProjectPath)) {
                         betterModuleName = betterModuleName
                             .split(`${absoluteProjectPath}`)[1] // Transform absolute path to relative one
-                            .substring(1); // Remove leading path slash
+                            .slice(1); // Remove leading path slash
                     }
                     // Improve the path presentation further by enforcing style consistency and removing unnecessary details
                     betterModuleName = betterModuleName.replace(/\\/g, '/').replace('./', '').replace('multi ', '');
@@ -149,7 +149,7 @@ class ProgressLogger {
                 }
                 previousStep = 4;
                 logLines.push(chalk_1.default.white(`  ${figures_1.default.pointer} Emit files`));
-                const subProgress = Math.round(((progress - 0.96) * 10000) / 23);
+                // const subProgress = Math.round(((progress - 0.96) * 10_000) / 23);
                 // bar.update(subProgress);
             }
             else if (progress === 1) {

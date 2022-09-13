@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const cli_table_1 = __importDefault(require("cli-table"));
-const notifier_1 = __importDefault(require("../notifier/notifier"));
-const helpers_1 = require("../utils/helpers");
-const deploy_1 = __importDefault(require("../deployer/deploy"));
+const notifier_1 = __importDefault(require("@plugin/notifier/notifier"));
+const helpers_1 = require("@plugin/utils/helpers");
+const deploy_1 = __importDefault(require("@plugin/deployer/deploy"));
 /**
  * CompileHandler
  */
@@ -39,14 +39,14 @@ class CompileHandler {
         const localOutput = stats.compilation.compiler.options.output.path;
         if (this.afterStartCompile) {
             const context = stats.compilation.compiler.context; // ex: C:\xampp8\htdocs\evsaml
-            stats.compilation.emittedAssets.forEach((asset) => {
+            for (const asset of stats.compilation.emittedAssets) {
                 this.modifiedBundles.push(asset.replace(/\//g, '\\'));
-            });
+            }
             if (stats.compilation.compiler.modifiedFiles) {
-                stats.compilation.compiler.modifiedFiles.forEach((file) => {
+                for (const file of stats.compilation.compiler.modifiedFiles) {
                     const modified = file.split(context).pop();
                     this.tableModifieds.push([modified]);
-                });
+                }
             }
             this.deploy.unitUpload(this.modifiedBundles, this.options.remoteOutput, localOutput, () => {
                 this.modifiedBundles = [];

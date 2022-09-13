@@ -1,9 +1,9 @@
 import webpack from 'webpack';
 import Table from 'cli-table';
-import {Options} from '../types';
-import Notifier from '../notifier/notifier';
-import {formatSize} from '../utils/helpers';
-import Deploy from '../deployer/deploy';
+import {Options} from '@plugin/types';
+import Notifier from '@plugin/notifier/notifier';
+import {formatSize} from '@plugin/utils/helpers';
+import Deploy from '@plugin/deployer/deploy';
 
 /**
  * CompileHandler
@@ -18,7 +18,7 @@ export default class CompileHandler {
   private deploy: Deploy;
   private afterStartCompile: boolean;
   private modifiedBundles: Array<string>;
-  private displayNotifications: boolean = true;
+  private displayNotifications = true;
   private tableBundles: Table;
   private tableModifieds: Table;
 
@@ -53,14 +53,14 @@ export default class CompileHandler {
     const localOutput = stats.compilation.compiler.options.output.path;
     if (this.afterStartCompile) {
       const context = stats.compilation.compiler.context; // ex: C:\xampp8\htdocs\evsaml
-      stats.compilation.emittedAssets.forEach((asset) => {
+      for (const asset of stats.compilation.emittedAssets) {
         this.modifiedBundles.push(asset.replace(/\//g, '\\'));
-      });
+      }
       if (stats.compilation.compiler.modifiedFiles) {
-        stats.compilation.compiler.modifiedFiles.forEach((file, ) => {
+        for (const file of stats.compilation.compiler.modifiedFiles) {
           const modified = file.split(context).pop();
           this.tableModifieds.push([modified]);
-        });
+        }
       }
       this.deploy.unitUpload(this.modifiedBundles, this.options.remoteOutput, localOutput, () => {
         this.modifiedBundles = []
@@ -94,7 +94,7 @@ export default class CompileHandler {
    * @param compiler
    * @param callback
    */
-  public onCompilationWatchRun (compiler: webpack.Compiler, callback: Function): void {
+  public onCompilationWatchRun (compiler: webpack.Compiler, callback: () => void): void {
     this.notifierHandle.onCompilationWatchRun(compiler, callback);
   }
 
