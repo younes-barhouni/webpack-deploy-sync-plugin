@@ -1,9 +1,9 @@
 import webpack from 'webpack';
 import Table from 'cli-table';
-import {Options} from '@plugin/types';
-import Notifier from '@plugin/notifier/notifier';
-import {formatSize} from '@plugin/utils/helpers';
-import Deploy from '@plugin/deployer/deploy';
+import {Options} from '../types';
+import Notifier from '../notifier/notifier';
+import {formatSize} from '../utils/helpers';
+import Deploy from '../deployer/deploy';
 
 /**
  * CompileHandler

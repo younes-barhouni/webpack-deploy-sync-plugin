@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const cli_table_1 = __importDefault(require("cli-table"));
-const notifier_1 = __importDefault(require("@plugin/notifier/notifier"));
-const helpers_1 = require("@plugin/utils/helpers");
-const deploy_1 = __importDefault(require("@plugin/deployer/deploy"));
+const notifier_1 = __importDefault(require("../notifier/notifier"));
+const helpers_1 = require("../utils/helpers");
+const deploy_1 = __importDefault(require("../deployer/deploy"));
 /**
  * CompileHandler
  */
