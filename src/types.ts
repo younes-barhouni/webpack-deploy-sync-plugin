@@ -21,7 +21,6 @@ export type CompilationResult = {
 };
 
 export type Options = {
-  pluginName?: string;
   /**
    * The notification title prefix. Defaults to `Webpack Build`.
    */
@@ -30,31 +29,6 @@ export type Options = {
    * The absolute path to the project logo to be displayed as a content image in the notification. Optional.
    */
   logo?: string;
-  /**
-   * The sound to play for notifications. Set to false to play no sound. Valid sounds are listed
-   * in the node-notifier project: https://github.com/mikaelbr/node-notifier. Defaults to `Submarine`.
-   */
-  sound?: string | false;
-  /**
-   * The sound to play for success notifications. Defaults to the value of the *sound* configuration option.
-   * Set to false to play no sound for success notifications. Takes precedence over the *sound* configuration option.
-   */
-  successSound?: string | false;
-  /**
-   * The sound to play for warning notifications. Defaults to the value of the *sound* configuration option.
-   * Set to false to play no sound for warning notifications. Takes precedence over the *sound* configuration option.
-   */
-  warningSound?: string | false;
-  /**
-   * The sound to play for failure notifications. Defaults to the value of the *sound* configuration option.
-   * Set to false to play no sound for failure notifications. Takes precedence over the *sound* configuration option.
-   */
-  failureSound?: string | false;
-  /**
-   * The sound to play for compilation notifications. Defaults to the value of the *sound* configuration option.
-   * Set to false to play no sound for compilation notifications. Takes precedence over the *sound* configuration option.
-   */
-  compilationSound?: string | false;
   /**
    * A function which is invoked when compilation starts. Optional. The function is passed one parameter:
    * 1. {webpack.compiler.Compiler} compiler - The webpack Compiler instance.
@@ -94,26 +68,6 @@ export type Options = {
    */
   activateTerminalOnError?: boolean
   /**
-   * The absolute path to the icon to be displayed for success notifications.
-   * Defaults to `./icons/success.png`.
-   */
-  successIcon?: string;
-  /**
-   * The absolute path to the icon to be displayed for warning notifications.
-   * Defaults to `./icons/warning.png`.
-   */
-  warningIcon?: string;
-  /**
-   * The absolute path to the icon to be displayed for failure notifications.
-   * Defaults to `./icons/failure.png`.
-   */
-  failureIcon?: string;
-  /**
-   * The absolute path to the icon to be displayed for compilation started notifications.
-   * Defaults to `./icons/compile.png`.
-   */
-  compileIcon?: string;
-  /**
    * A function called when clicking on a warning or error notification. By default, it activates the Terminal application.
    * The function is passed two parameters:
    *
@@ -121,65 +75,23 @@ export type Options = {
    *  2. {NotificationCenter.Notification} options - The notifier object options.
    */
   onClick?: (notifier: NodeNotifier, options: NotificationCenter.Notification) => void;
-  /**
-   * A function called when the notification times out (closes). Undefined by default. The function is passed
-   * two parameters:
-   *
-   *  1. {NotificationCenter} notifierObject - The notifier object instance.
-   *  2. {NotificationCenter.Notification} options - The notifier object options.
-   */
-  onTimeout?: (notifier: NotificationCenter, options: NotificationCenter.Notification) => void;
-  /**
-   * A function which returns a formatted notification message on successful compilation.
-   *
-   * This function must return a String.
-   *
-   * The default formatter will display "Build successful!".
-   *
-   * Note that the message will always be limited to 256 characters.
-   */
-  formatSuccess?: () => string | undefined;
-  /**
-   * A function which returns a formatted notification message on error or warning.
-   * The function is passed 4 parameters:
-   *
-   *  1. {CompilationResult} error/warning - The raw error or warning object.
-   *  2. {string} filepath - The path to the file containing the error/warning (if available).
-   *  3. {CompilationStatus} status - Error or warning
-   *  4. {number} count - How many errors or warnings were raised
-   *
-   * This function must return a String.
-   *
-   * The default messageFormatter will display the filename which contains the error/warning followed by the
-   * error/warning message.
-   *
-   * Note that the message will always be limited to 256 characters.
-   */
-  messageFormatter?: (
-    error: CompilationResult,
-    filepath: string,
-    status: CompilationStatus,
-    count: number
-  ) => string;
-  /**
-   * Any additional node-notifier options as documented in the node-notifier documentation:
-   * https://github.com/mikaelbr/node-notifier
-   *
-   * This config option can either be provided as a node-notifier `Notification` object, _OR_ a
-   * function which accepts the `CompilationStatus` and returns a `Notification` object.
-   *
-   * Note that options provided here will only be applied to the success/warning/error notifications
-   * (not the "compilation started" notification). The `title`, `message`, `sound`, `contentImage` (logo), and `icon`
-   * options will be ignored, as they will be set via the corresponding {WebpackBuildNotifierConfig} options
-   * (either user-specified or default).
-   */
-  notifyOptions?:
-    | NotificationCenter.Notification
-    | ((status: CompilationStatus) => NotificationCenter.Notification | undefined);
 
+  pluginName?: string;
   sshConfig?: Record<string, string|number>;
 
   remoteOutput?: string;
   displayNotifications?: boolean;
-  webpackInstance?: typeof webpack
+  webpackInstance?: typeof webpack,
+  getCompilerHooks?: any;
+  tmpPath?: string;
+  localOutput?: string;
 };
+
+/**
+ * Progress Logger Options
+ */
+export interface IProgressLoggerOptions {
+  color: boolean;
+  name: string;
+  webpackInstance: any;
+}

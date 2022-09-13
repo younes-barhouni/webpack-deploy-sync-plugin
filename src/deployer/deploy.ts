@@ -4,25 +4,34 @@ import cliProgress from 'cli-progress';
 import inquirer from 'inquirer';
 import {colorize, colorList, log} from '../utils/helpers';
 import { SFTPWrapper } from 'ssh2';
-require('events').EventEmitter.defaultMaxListeners = 25; // prevent events memory leak message
+import * as fs from 'fs';
+
+require('events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
 
 /**
  * Deploy Class
  */
 class Deploy {
-  private sftp: Client;
-  private sshConfig: ConnectOptions;
+
+  private readonly sftp: Client;
+  private sshConfig: ConnectOptions & {remote: string, tmpPath: string, localOutput: string};
 
   /**
-   *
+   * constructor
    * @param sshConfig
    */
-  public constructor(sshConfig: ConnectOptions) {
+  public constructor(sshConfig: ConnectOptions & {remote: string, tmpPath: string, localOutput: string}, success, fail) {
     this.sshConfig = sshConfig;
+    try {
+      this.sftp = this.connect(success, fail);
+    } catch (e) {
+      process.stdout.write(colorize(colorList.red, e.message));
+      process.stdout.write('\n');
+    }
   }
 
   /**
-   *
+   * connect
    * @private
    */
   private connect(success, fail) {
@@ -31,8 +40,11 @@ class Deploy {
       .then((sftp) => {
         process.stdout.write(`Connection to remote \x1b[36m${this.sshConfig.host}\x1b[0m successfully established.`);
         process.stdout.write('\n');
-        success()
-      }).catch((err: any): void => {
+        success();
+        // this.doSync(this.sshConfig, client);
+
+      })
+      .catch((err: any): void => {
         log(colorList.red, err.message);
         fail()
       });
@@ -49,46 +61,57 @@ class Deploy {
   }
 
   /**
-   * handlePrepareRemote
+   * doSync
+   * @param sshConfig
+   * @param client
+   * @private
    */
-  public async handlePrepareRemote(success, fail): Promise<void> {
-    try {
-      this.sftp = this.connect(success, fail);
-    } catch (e) {
-      process.stdout.write(colorize(colorList.red, e.message));//cyan
-      process.stdout.write('\n');
-    }
+  private doSync(sshConfig, client) {
+    const localManifestData: string = fs.readFileSync(`${sshConfig.localOutput}/manifest.json`) as unknown as string;
+    const localManifest = JSON.parse(localManifestData);
+    // console.log(localManifest.uuid);
+    client.get(`${sshConfig.remote}/manifest.json`, `${sshConfig.tmpPath}/manifest.json`)
+      .then((file: string ) => {
+        const remoteManifestData: string = fs.readFileSync(file) as unknown as string;
+        const remoteManifest = JSON.parse(remoteManifestData);
+        // console.log(remoteManifest.uuid);
+      });
   }
 
   /**
-   *
+   * onOkUploadAllDist
    * @param localOutput
    * @param remoteOutput
    * @private
    */
   private async onOkUploadAllDist(localOutput, remoteOutput): Promise<void> {
-    process.stdout.write(colorize(colorList.cyan,'Please Wait! Sync with remote dist started...'));//cyan
+    const client = this.sftp;
+    // console.log(localOutput, remoteOutput)
+    process.stdout.write(colorize(colorList.cyan,'Please Wait! Sync with remote dist started...'));
     try {
-      this.sftp.rmdir(remoteOutput, true).then(() => {
+      client.rmdir(remoteOutput, true).then(() => {
         process.stdout.write(colorize(colorList.white,'remote output cleaning started...'));
-        return this.sftp.mkdir(remoteOutput);
+        return client.mkdir(remoteOutput);
       }).then(async () => {
         process.stdout.write(colorize(colorList.white,'remote output cleaning finished.'));
         // upload generated bundles in outputPath to remote destination
-        await this.sftp.uploadDir(localOutput, remoteOutput);
+        await client.uploadDir(localOutput, remoteOutput);
         process.stdout.write(colorize(colorList.cyan,'Sync with remote dist finished'));
-      }).catch((err: any) => {
-        // console.error('err.message => ', err.message);
+      }).finally(async () => {
+        await client.end();
+      })
+      .catch((err: any) => {
+        console.log(err)
         log(colorList.red,' Something went wrong!.');
       });
-    } finally {
-      console.log('*************** Finally *****************')
-      await this.sftp.end();
+    } catch (e) {
+      console.log(e)
+      log(colorList.red,' Something went wrong!.');
     }
   }
 
   /**
-   *
+   * onCancelUploadDist
    * @private
    */
   private onCancelUploadDist(): void {
@@ -175,7 +198,7 @@ class Deploy {
     }
 
     /**
-     *
+     * uploadBundlesGenerator
      * @param conn
      * @param bundles
      */

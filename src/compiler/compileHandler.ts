@@ -32,8 +32,10 @@ export default class CompileHandler {
     this.startCompile = true;
     this.modifiedBundles = [];
     this.pluginName = options.pluginName || 'pluginName';
-    this.deploy = new Deploy(options.sshConfig);
-    void this.deploy.handlePrepareRemote(() => {
+    this.deploy = new Deploy({...options.sshConfig,
+      localOutput: this.options.localOutput,
+      tmpPath: this.options.tmpPath,
+      remote: this.options.remoteOutput}, () => {
       this.notifierHandle.sshConnectionSuccess();
     }, () => {
       this.notifierHandle.sshConnectionFail();
@@ -43,14 +45,6 @@ export default class CompileHandler {
     this.tableModifieds = this.initModifiedsTable();
   }
 
-  private initBundlesTable(): Table {
-    return new Table({head: ['Bundle', 'Size'], colWidths: [45, 15]});
-  }
-
-  private initModifiedsTable(): Table {
-    return new Table({head: ['Modified Files'], colWidths: [60]});
-  }
-
   /**
    * collectAssets
    * @param stats
@@ -58,7 +52,6 @@ export default class CompileHandler {
   public collectAssets(stats: webpack.Stats): void {
     const localOutput = stats.compilation.compiler.options.output.path;
     if (this.afterStartCompile) {
-      // console.log('\x1Bc');
       const context = stats.compilation.compiler.context; // ex: C:\xampp8\htdocs\evsaml
       stats.compilation.emittedAssets.forEach((asset) => {
         this.modifiedBundles.push(asset.replace(/\//g, '\\'));
@@ -79,7 +72,7 @@ export default class CompileHandler {
         () => this.notifierHandle.sshConnectionFail(),
         () => this.notifierHandle.deployRemoteEnd());
     } else {
-      let notificationUpload = (message: string, yesCallback: () => void, noCallback: () => void) => {};
+      let notificationUpload;
       if (this.options.displayNotifications) {
         notificationUpload = this.notifierHandle.notifyWithActions
       }
@@ -105,7 +98,12 @@ export default class CompileHandler {
     this.notifierHandle.onCompilationWatchRun(compiler, callback);
   }
 
-  public onAssetsEmitted(file, source, compiler): void {
+  /**
+   *
+   * @param file
+   * @param source
+   */
+  public onAssetsEmitted(file, source): void {
     if (this.afterStartCompile) {
       const asset = file.replace(/\//g, '\\');
       const size = formatSize(source.size());
@@ -115,5 +113,21 @@ export default class CompileHandler {
 
   public displayNotSupportedWebpackVersion(): void {
     this.notifierHandle.warnIsNotSupported();
+  }
+
+  /**
+   * initBundlesTable
+   * @private
+   */
+  private initBundlesTable(): Table {
+    return new Table({head: ['Bundle', 'Size'], colWidths: [45, 15]});
+  }
+
+  /**
+   * initModifiedsTable
+   * @private
+   */
+  private initModifiedsTable(): Table {
+    return new Table({head: ['Modified Files'], colWidths: [60]});
   }
 }

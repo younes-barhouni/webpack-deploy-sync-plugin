@@ -1,14 +1,12 @@
 import path from 'path';
 import process from 'process';
 import os from 'os';
+import webpack from 'webpack';
 import notifier from 'node-notifier';
 import stripAnsi from 'strip-ansi';
 import { exec, execFileSync } from 'child_process';
 import { Notification } from 'node-notifier/notifiers/notificationcenter';
 import { CompilationResult, Options, CompilationStatus } from '../types';
-import webpack, {Compilation} from 'webpack';
-
-const DEFAULT_ICON_PATH = path.resolve(__dirname, '../assets');
 
 // https://github.com/mikaelbr/node-notifier/issues/154
 // Specify appID to prevent SnoreToast shortcut installation.
@@ -17,14 +15,14 @@ const DEFAULT_ICON_PATH = path.resolve(__dirname, '../assets');
 // This only has an effect in Windows.
 // const snoreToastOptions = notifier.Notification === notifier.WindowsToaster && { appID: 'Vue UI' }
 
+const DEFAULT_ICON_PATH = path.resolve(__dirname, '../assets');
 
 class Notifier {
-  private appName: string | undefined = undefined;
+
   private buildSuccessful: boolean = false;
   private hasRun: boolean = false;
   // Default options
   private title: string = '';
-  private logo?: string = path.join(DEFAULT_ICON_PATH, 'compile_success.png');
   private sound: string = 'Submarine';
   private readonly successSound: string;
   private readonly warningSound: string;
@@ -34,7 +32,7 @@ class Notifier {
   private suppressWarning: boolean = false;
   private activateTerminalOnError: boolean = false;
   private showDuration: boolean = false;
-
+  private logo?: string = path.join(DEFAULT_ICON_PATH, 'webpack.png');
   private successIcon: string = path.join(DEFAULT_ICON_PATH, 'compile_success.png');
   private warningIcon: string = path.join(DEFAULT_ICON_PATH, 'compile_warning.png');
   private failureIcon: string = path.join(DEFAULT_ICON_PATH, 'compile_failure.png');
@@ -47,10 +45,6 @@ class Notifier {
   private onCompileStart?: Options['onCompileStart'];
   private onComplete?: Options['onComplete'];
   private onClick: Options['onClick'] = () => this.activateTerminalWindow;
-  private onTimeout?: Options['onTimeout'];
-  private formatSuccess?: Options['formatSuccess'];
-  private messageFormatter?: Options['messageFormatter'];
-  private notifyOptions?: Options['notifyOptions'];
 
   constructor(options: Options) {
     Object.assign(this, options);
@@ -62,9 +56,6 @@ class Notifier {
     }
     this.registerSnoreToast();
     notifier.on('click', this.onClick!);
-    if (this.onTimeout) {
-      notifier.on('timeout', this.onTimeout);
-    }
   }
 
   private activateTerminalWindow(): void {
@@ -80,6 +71,10 @@ class Notifier {
     }
   }
 
+  /**
+   *
+   * @private
+   */
   private registerSnoreToast(): void  {
     // ensure the SnoreToast appId is registered, which is needed for Windows Toast notifications
     // this is necessary in Windows 8 and above, (Windows 10 post build 1709), where all notifications must be generated
@@ -92,7 +87,6 @@ class Notifier {
 
       if (winVer >= 6.2) {
         // Windows version >= 8
-        //`snoretoast-${process.arch === 'x64' ? 'x64' : 'x86'}.exe`
         const snoreToast = path.join(
           require.resolve('node-notifier'),
           '../vendor/snoreToast',
@@ -110,7 +104,6 @@ class Notifier {
               'notification',
             ]
           );
-          this.appName = 'Webpack Deploy SSH';
         } catch (e) {
           console.error('An error occurred while attempting to install the SnoreToast AppID!', e);
         }
@@ -119,34 +112,45 @@ class Notifier {
   }
 
   // formats the error/warning message
-  private readonly formatMessage = (
-    error: CompilationResult,
-    filepath: string,
-    status: CompilationStatus,
-    errorCount: number
-  ): string => {
+  private formatMessage(error: CompilationResult, filepath: string): string {
     let message: string | undefined;
-    if (this.messageFormatter) {
-      message = this.messageFormatter(error, filepath, status, errorCount);
-    } else {
-      message = (error.message || error.details);
-      if (message && error.module && error.module.resource) {
-        message = `${filepath}${os.EOL}${message!.replace(error.module.resource, '')}`;
-      }
+    message = (error.message || error.details);
+    if (message && error.module && error.module.resource) {
+      message = `${filepath}${os.EOL}${message.replace(error.module.resource, '')}`;
     }
     if (message === undefined) {
       return 'Unknown';
     } else if (typeof message === 'string') {
       return message.slice(0, 256); // limit message length to 256 characters, fixes #20
-    } else {
-      throw `Invalid message type '${typeof message}'; messageFormatter must return a string.`;
     }
-  };
+  }
 
-  public readonly onCompilationDone = (results: webpack.Stats): void => {
+  /**
+   *
+   * @param compilation
+   * @param type
+   * @private
+   */
+  private getFirstWarningOrError(compilation: webpack.Compilation, type: 'warnings'|'errors'): any {
+    if (compilation.children && compilation.children.length) {
+      for (let child of compilation.children) {
+        const warningsOrErrors = child[type];
+        if (warningsOrErrors && warningsOrErrors[0]) {
+          return warningsOrErrors[0];
+        }
+      }
+    }
+    return compilation[type][0];
+  }
+
+  /**
+   * onCompilationDone
+   * @param results
+   */
+  public onCompilationDone(results: webpack.Stats): void {
     let notify: boolean = false;
     let title = `${this.title} - `;
-    let msg = this.formatSuccess?.() ?? 'Build successful!';
+    let msg = 'Build successful!';
     let icon = this.successIcon;
     let sound = this.successSound;
     let compilationStatus = CompilationStatus.SUCCESS;
@@ -157,12 +161,7 @@ class Notifier {
       notify = true;
       compilationStatus = CompilationStatus.ERROR;
       title += 'Error';
-      msg = this.formatMessage(
-        error,
-        errorFilePath,
-        compilationStatus,
-        this.getWarningOrErrorCount(results.compilation, 'errors')
-      );
+      msg = this.formatMessage(error, errorFilePath);
       icon = this.failureIcon;
       sound = this.failureSound;
       this.buildSuccessful = false;
@@ -172,12 +171,7 @@ class Notifier {
       notify = true;
       compilationStatus = CompilationStatus.WARNING;
       title += 'Warning';
-      msg = this.formatMessage(
-        warning,
-        warningFilePath,
-        compilationStatus,
-        this.getWarningOrErrorCount(results.compilation, 'warnings')
-      );
+      msg = this.formatMessage(warning, warningFilePath);
       icon = this.warningIcon;
       sound = this.warningSound;
       this.buildSuccessful = false;
@@ -186,48 +180,37 @@ class Notifier {
       if (this.showDuration) {
         msg += ` [${results.endTime - results.startTime} ms]`;
       }
-      if (this.suppressSuccess === 'always' || (this.suppressSuccess === 'initial' && !this.hasRun)) {
-        notify = false;
-      } else if (this.suppressSuccess === false || !this.buildSuccessful) {
+      if (this.suppressSuccess === false || !this.buildSuccessful) {
         notify = true; // previous build failed, let's show a notification even if success notifications are suppressed
       }
       this.buildSuccessful = true;
     }
-
-    const notifyOptions =
-      (typeof this.notifyOptions === 'function'
-        ? this.notifyOptions(compilationStatus)
-        : this.notifyOptions) ?? {};
-
     if (notify) {
-      notifier.notify(
-        Object.assign(notifyOptions, {
-          title,
-          sound,
-          icon,
-          appID: 'Notification',
-          message: stripAnsi(msg),
-          contentImage: this.logo,
-          wait: !this.buildSuccessful
-        })
-      );
-
+      notifier.notify({
+        appID: 'Notification',
+        title,
+        icon,
+        message: stripAnsi(msg),
+        contentImage: this.logo,
+        sound,
+        wait: !this.buildSuccessful
+      } as Notification);
       if (this.onComplete) {
         this.onComplete(results.compilation, compilationStatus);
       }
     }
-
     if (this.activateTerminalOnError && !this.buildSuccessful) {
       this.activateTerminalWindow();
     }
-
     this.hasRun = true;
-  };
+  }
 
-  public readonly onCompilationWatchRun = (
-    compiler: webpack.Compiler,
-    callback: Function
-  ): void => {
+  /**
+   *
+   * @param compiler
+   * @param callback
+   */
+  public onCompilationWatchRun(compiler: webpack.Compiler, callback: Function): void {
     notifier.notify({
       appID: 'Notification',
       title: `${this.title} - watching`,
@@ -240,45 +223,12 @@ class Notifier {
       this.onCompileStart(compiler);
     }
     callback();
-  };
-
-  private readonly getFirstWarningOrError = (
-    compilation: webpack.Compilation,
-    type: 'warnings' | 'errors'
-  ): any => {
-
-    if (compilation.children && compilation.children.length) {
-      for (let child of compilation.children) {
-        const warningsOrErrors = child[type];
-        if (warningsOrErrors && warningsOrErrors[0]) {
-          return warningsOrErrors[0];
-        }
-      }
-    }
-    return compilation[type][0];
   }
 
-  private readonly getWarningOrErrorCount = (
-    compilation: webpack.Compilation,
-    type: 'warnings' | 'errors',
-  ): number => {
-    if (compilation.children && compilation.children.length) {
-      const count = compilation.children.reduce((previousCount: number, child: Compilation) => {
-        let currentCount = previousCount;
-        const warningsOrErrors = child[type];
-        if (warningsOrErrors) {
-          currentCount += warningsOrErrors.length;
-        }
-        return currentCount;
-      }, 0);
-      if (count > 0) {
-        return count;
-      }
-    }
-    return compilation[type].length;
-  };
-
-  public readonly warnIsNotSupported = (): void => {
+  /**
+   *
+   */
+  public warnIsNotSupported(): void {
     notifier.notify({
       appID: 'Notification',
       title: this.title,
@@ -289,6 +239,12 @@ class Notifier {
     } as Notification);
   }
 
+  /**
+   *
+   * @param message
+   * @param yesCallback
+   * @param noCallback
+   */
   public readonly notifyWithActions = (message, yesCallback, noCallback): void => {
     notifier.notify({
       appID: 'Notification',
@@ -312,10 +268,12 @@ class Notifier {
       noCallback();
       notifier.off('no', () => {});
     });
+  };
 
-  }
-
-  public readonly deployRemoteEnd = (): void => {
+  /**
+   *
+   */
+  public deployRemoteEnd(): void {
     notifier.notify({
       appID: 'Notification',
       title: this.title,
@@ -326,7 +284,10 @@ class Notifier {
     } as Notification);
   }
 
-  public readonly sshConnectionSuccess = (): void => {
+  /**
+   *
+   */
+  public sshConnectionSuccess(): void {
     notifier.notify({
       appID: 'Notification',
       title: this.title,
@@ -337,7 +298,10 @@ class Notifier {
     } as Notification);
   }
 
-  public readonly sshConnectionFail = (): void => {
+  /**
+   *
+   */
+  public sshConnectionFail(): void {
     notifier.notify({
       appID: 'Notification',
       title: this.title,
@@ -347,6 +311,7 @@ class Notifier {
       sound: this.warningSound
     } as Notification);
   }
+
 }
 
 export default Notifier;

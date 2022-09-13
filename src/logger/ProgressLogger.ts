@@ -2,14 +2,13 @@ import chalk from 'chalk';
 import figures from 'figures';
 import log from 'log-update';
 import * as path from 'path';
-import ProgressBar from 'progress';
 import { Compiler, WebpackPluginInstance } from 'webpack';
 import cliProgress from 'cli-progress';
 
-import { IProgressLoggerOptions } from './progress-logger.interfaces';
+import { IProgressLoggerOptions } from '../types';
 
 /**
- * Compact logger
+ * Progress logger class
  */
 export class ProgressLogger implements WebpackPluginInstance {
   /**
@@ -36,8 +35,8 @@ export class ProgressLogger implements WebpackPluginInstance {
     let startTime = new Date();
     let previousStep = 0;
 
-    const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-    bar.start(100, 0);
+    // const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+    // bar.start(100, 0);
     /**
      * Use the webpack-internal progress plugin as the base of the logger
      */
@@ -51,7 +50,7 @@ export class ProgressLogger implements WebpackPluginInstance {
       if (previousStep === 0) {
         log(this.options.name);
         startTime = new Date();
-        bar.start(100, 0);
+        // bar.start(100, 0);
       }
 
       // STEP 0: HEADER
@@ -114,7 +113,7 @@ export class ProgressLogger implements WebpackPluginInstance {
           const moduleDetails = `${betterModulesDone} of ${betterAllModules} :: ${betterModuleName}`;
           logLines.push(chalk.grey(`    ${figures.arrowRight} ${moduleDetails}`));
         }
-        bar.update(subProgress);
+        // bar.update(subProgress);
       } else if (progress > 0.7) {
         logLines.push(chalk.green(`  ${figures.tick} Build modules`));
       }
@@ -135,7 +134,7 @@ export class ProgressLogger implements WebpackPluginInstance {
         const formattedMessageExtra = progress === 0.91 ? ' -- may take a while' : ''; // Add some extra info (calming devs down)
 
         logLines.push(chalk.grey(`    ${figures.arrowRight} ${formattedMessage}${formattedMessageExtra} ...`));
-        bar.update(subProgress);
+        // bar.update(subProgress);
       } else if (progress >= 0.95) {
         logLines.push(chalk.green(`  ${figures.tick} Optimize modules`));
       }
@@ -150,7 +149,7 @@ export class ProgressLogger implements WebpackPluginInstance {
 
         logLines.push(chalk.white(`  ${figures.pointer} Emit files`));
         const subProgress = Math.round(((progress - 0.96) * 10000) / 23);
-        bar.update(subProgress);
+        // bar.update(subProgress);
       } else if (progress === 1) {
         logLines.push(chalk.green(`  ${figures.tick} Emit files`));
       }
@@ -163,7 +162,7 @@ export class ProgressLogger implements WebpackPluginInstance {
         const processTime = ((finishTime.getTime() - startTime.getTime()) / 1000).toFixed(3);
 
         logLines.push(chalk.white(`\nFinished after ${processTime} seconds.\n`));
-        bar.stop();
+        // bar.stop();
       }
 
       // Finally, let's bring those logs to da screen
