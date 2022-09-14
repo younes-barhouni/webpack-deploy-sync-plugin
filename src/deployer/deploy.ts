@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Client, {ConnectOptions} from 'ssh2-sftp-client';
 import PromisePool from 'es6-promise-pool';
 import cliProgress from 'cli-progress';
@@ -8,7 +7,7 @@ import { SFTPWrapper } from 'ssh2';
 // import * as fs from 'node:fs';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('node:events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
+require('events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
 
 /**
  * Deploy Class
@@ -40,20 +39,20 @@ class Deploy {
     const client = new Client();
     client.connect(this.sshConfig)
       .then(() => {
-        process.stdout.write(`Connection to remote \u001B[36m${this.sshConfig.host}\u001B[0m successfully established.`);
+        process.stdout.write(`Connection to remote \x1b[36m${this.sshConfig.host}\x1b[0m successfully established.`);
         process.stdout.write('\n');
         success();
         // this.doSync(this.sshConfig, client);
 
       })
-      .catch((error: Error): void => {
-        log(colorList.red, error.message);
+      .catch((err: Error): void => {
+        log(colorList.red, err.message);
         fail()
       });
     //
     if (client) {
       client.on('upload', (info: any) => {
-        console.log('Listener: Uploaded', `\u001B[32m${info.source}\u001B[0m`);
+        console.log('Listener: Uploaded ', `\x1b[32m${info.source}\x1b[0m`);
       })
       client.on('end', () => {
         log(colorList.yellow, 'Deploy complete.');
@@ -102,12 +101,12 @@ class Deploy {
       }).finally(async () => {
         await client.end();
       })
-      .catch((error: any) => {
-        console.log(error)
+      .catch((err: any) => {
+        console.log(err)
         log(colorList.red,' Something went wrong!.');
       });
-    } catch (error) {
-      console.log(error)
+    } catch (e) {
+      //console.log(e)
       log(colorList.red,' Something went wrong!.');
     }
   }
@@ -179,7 +178,7 @@ class Deploy {
         const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
         // start the progress bar with a total value of 200 and start value of 0
         bar.start(100, 0);
-        return sftp.fastPut(`${localOutput}\\${bundle}`, `${remoteOutput}\\${bundle}`, {concurrency: 1, chunkSize: 128*1024, step: function(transferred, chunk, total) {
+        return sftp.fastPut(`${localOutput}/${bundle}`, `${remoteOutput}/${bundle}`, {concurrency: 1, chunkSize: 128*1024, step: function(transferred, chunk, total) {
             // uploaded 1 chunk
             // with concurrency = 32 on a 20MB file this gets called about 6 times and then the process just hangs forever
             // create a new progress bar instance and use shades_classic theme
@@ -211,12 +210,12 @@ class Deploy {
     }
 
     try {
-      const conn = new Client();
+      let conn = new Client();
       conn.connect(this.sshConfig)
         .then((sftp: SFTPWrapper) => {
           success();
           const promiseIterator = uploadBundlesGenerator(sftp, modifiedBundles)
-          const pool = new PromisePool(promiseIterator as unknown as () => void | PromiseLike<unknown>, 10);
+          let pool = new PromisePool(promiseIterator as unknown as () => void | PromiseLike<unknown>, 10);
           pool.start().then(() => {
             sftp.end();
             log(colorList.yellow,' Deploy complete.');

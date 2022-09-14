@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const ssh2_sftp_client_1 = __importDefault(require("ssh2-sftp-client"));
 const es6_promise_pool_1 = __importDefault(require("es6-promise-pool"));
 const cli_progress_1 = __importDefault(require("cli-progress"));
@@ -20,7 +19,7 @@ const inquirer_1 = __importDefault(require("inquirer"));
 const helpers_1 = require("../utils/helpers");
 // import * as fs from 'node:fs';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('node:events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
+require('events').EventEmitter.defaultMaxListeners = 30; // prevent events memory leak message
 /**
  * Deploy Class
  */
@@ -47,19 +46,19 @@ class Deploy {
         const client = new ssh2_sftp_client_1.default();
         client.connect(this.sshConfig)
             .then(() => {
-            process.stdout.write(`Connection to remote \u001B[36m${this.sshConfig.host}\u001B[0m successfully established.`);
+            process.stdout.write(`Connection to remote \x1b[36m${this.sshConfig.host}\x1b[0m successfully established.`);
             process.stdout.write('\n');
             success();
             // this.doSync(this.sshConfig, client);
         })
-            .catch((error) => {
-            (0, helpers_1.log)(helpers_1.colorList.red, error.message);
+            .catch((err) => {
+            (0, helpers_1.log)(helpers_1.colorList.red, err.message);
             fail();
         });
         //
         if (client) {
             client.on('upload', (info) => {
-                console.log('Listener: Uploaded', `\u001B[32m${info.source}\u001B[0m`);
+                console.log('Listener: Uploaded ', `\x1b[32m${info.source}\x1b[0m`);
             });
             client.on('end', () => {
                 (0, helpers_1.log)(helpers_1.colorList.yellow, 'Deploy complete.');
@@ -107,13 +106,13 @@ class Deploy {
                 })).finally(() => __awaiter(this, void 0, void 0, function* () {
                     yield client.end();
                 }))
-                    .catch((error) => {
-                    console.log(error);
+                    .catch((err) => {
+                    console.log(err);
                     (0, helpers_1.log)(helpers_1.colorList.red, ' Something went wrong!.');
                 });
             }
-            catch (error) {
-                console.log(error);
+            catch (e) {
+                //console.log(e)
                 (0, helpers_1.log)(helpers_1.colorList.red, ' Something went wrong!.');
             }
         });
@@ -185,7 +184,7 @@ class Deploy {
                 const bar = new cli_progress_1.default.SingleBar({}, cli_progress_1.default.Presets.shades_classic);
                 // start the progress bar with a total value of 200 and start value of 0
                 bar.start(100, 0);
-                return sftp.fastPut(`${localOutput}\\${bundle}`, `${remoteOutput}\\${bundle}`, { concurrency: 1, chunkSize: 128 * 1024, step: function (transferred, chunk, total) {
+                return sftp.fastPut(`${localOutput}/${bundle}`, `${remoteOutput}/${bundle}`, { concurrency: 1, chunkSize: 128 * 1024, step: function (transferred, chunk, total) {
                         // uploaded 1 chunk
                         // with concurrency = 32 on a 20MB file this gets called about 6 times and then the process just hangs forever
                         // create a new progress bar instance and use shades_classic theme
@@ -215,12 +214,12 @@ class Deploy {
             }
         }
         try {
-            const conn = new ssh2_sftp_client_1.default();
+            let conn = new ssh2_sftp_client_1.default();
             conn.connect(this.sshConfig)
                 .then((sftp) => {
                 success();
                 const promiseIterator = uploadBundlesGenerator(sftp, modifiedBundles);
-                const pool = new es6_promise_pool_1.default(promiseIterator, 10);
+                let pool = new es6_promise_pool_1.default(promiseIterator, 10);
                 pool.start().then(() => {
                     sftp.end();
                     (0, helpers_1.log)(helpers_1.colorList.yellow, ' Deploy complete.');

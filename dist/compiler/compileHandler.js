@@ -39,14 +39,14 @@ class CompileHandler {
         const localOutput = stats.compilation.compiler.options.output.path;
         if (this.afterStartCompile) {
             const context = stats.compilation.compiler.context; // ex: C:\xampp8\htdocs\evsaml
-            for (const asset of stats.compilation.emittedAssets) {
-                this.modifiedBundles.push(asset.replace(/\//g, '\\'));
-            }
+            stats.compilation.emittedAssets.forEach((asset) => {
+                this.modifiedBundles.push(asset.replace(/\\/g, '/'));
+            });
             if (stats.compilation.compiler.modifiedFiles) {
-                for (const file of stats.compilation.compiler.modifiedFiles) {
+                stats.compilation.compiler.modifiedFiles.forEach((file) => {
                     const modified = file.split(context).pop();
                     this.tableModifieds.push([modified]);
-                }
+                });
             }
             this.deploy.unitUpload(this.modifiedBundles, this.options.remoteOutput, localOutput, () => {
                 this.modifiedBundles = [];
