@@ -29,9 +29,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/younesBarhouni/webpack-deploy-ssh-plugin.git"
+    "url": "https://github.com/younes-barhouni/webpack-deploy-ssh-plugin.git"
   },
-  "author": "Younes Barhouni <barhouni.younes@gmail.com>",
+  "author": "Younes Barhouni <younesbarhouni@live.com>",
   "license": "MIT",
   "dependencies": {
     "cli-progress": "^3.10.0",
