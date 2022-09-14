@@ -18,7 +18,7 @@ export default class CompileHandler {
   private deploy: Deploy;
   private afterStartCompile: boolean;
   private modifiedBundles: Array<string>;
-  private displayNotifications: boolean = true;
+  private displayNotifications = true;
   private tableBundles: Table;
   private tableModifieds: Table;
 

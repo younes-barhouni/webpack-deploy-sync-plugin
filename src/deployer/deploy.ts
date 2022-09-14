@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Client, {ConnectOptions} from 'ssh2-sftp-client';
 import PromisePool from 'es6-promise-pool';
 import cliProgress from 'cli-progress';
@@ -210,12 +211,12 @@ class Deploy {
     }
 
     try {
-      let conn = new Client();
+      const conn = new Client();
       conn.connect(this.sshConfig)
         .then((sftp: SFTPWrapper) => {
           success();
           const promiseIterator = uploadBundlesGenerator(sftp, modifiedBundles)
-          let pool = new PromisePool(promiseIterator as unknown as () => void | PromiseLike<unknown>, 10);
+          const pool = new PromisePool(promiseIterator as unknown as () => void | PromiseLike<unknown>, 10);
           pool.start().then(() => {
             sftp.end();
             log(colorList.yellow,' Deploy complete.');

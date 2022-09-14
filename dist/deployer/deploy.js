@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const ssh2_sftp_client_1 = __importDefault(require("ssh2-sftp-client"));
 const es6_promise_pool_1 = __importDefault(require("es6-promise-pool"));
 const cli_progress_1 = __importDefault(require("cli-progress"));
@@ -214,12 +215,12 @@ class Deploy {
             }
         }
         try {
-            let conn = new ssh2_sftp_client_1.default();
+            const conn = new ssh2_sftp_client_1.default();
             conn.connect(this.sshConfig)
                 .then((sftp) => {
                 success();
                 const promiseIterator = uploadBundlesGenerator(sftp, modifiedBundles);
-                let pool = new es6_promise_pool_1.default(promiseIterator, 10);
+                const pool = new es6_promise_pool_1.default(promiseIterator, 10);
                 pool.start().then(() => {
                     sftp.end();
                     (0, helpers_1.log)(helpers_1.colorList.yellow, ' Deploy complete.');
