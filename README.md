@@ -17,23 +17,23 @@ yarn add webpack-deploy-sync-plugin --dev
 ## Purpose
 
 <p align="center">
-  <img width="350" src="assets/compile_start.png">
+  <img width="350" src="https://raw.githubusercontent.com/younes-barhouni/webpack-deploy-sync-plugin/main/assets/compile_start.png">
 </p>
 
 <p align="center">
-  <img width="350" src="assets/start_bundle.png">
+  <img width="350" src="https://raw.githubusercontent.com/younes-barhouni/webpack-deploy-sync-plugin/main/assets/start_bundle.png">
 </p>
 
 <p align="center">
-  <img width="350" src="assets/ssh_con_fail.png">
+  <img width="350" src="https://raw.githubusercontent.com/younes-barhouni/webpack-deploy-sync-plugin/main/assets/ssh_con_fail.png">
 </p>
 
 <p align="center">
-  <img width="350" src="assets/need_action.png">
+  <img width="350" src="https://raw.githubusercontent.com/younes-barhouni/webpack-deploy-sync-plugin/main/assets/need_action.png">
 </p>
 
 <p align="center">
-  <img width="350" src="assets/build_success.png">
+  <img width="350" src="https://raw.githubusercontent.com/younes-barhouni/webpack-deploy-sync-plugin/main/assets/build_success.png">
 </p>
 
 
