@@ -1,6 +1,6 @@
 {
   "name": "webpack-deploy-ssh-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Webpack plugin that makes it easier to deploy bundles to remote machines, and display OS-level notifications for both Webpack build and SSH actions events",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -72,5 +72,8 @@
     "ts-jest": "^27.1.4",
     "typescript": "^4.6.3",
     "webpack": "^5.69.1"
+  },
+  "publishConfig": {
+    "@ybarhouni:registry": "https://github.com/younes-barhouni/webpack-deploy-ssh-plugin/packages/npm/"
   }
 }
